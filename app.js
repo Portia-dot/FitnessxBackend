@@ -2,10 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const mongoURI = process.env.MONGO_URI;
-const exercisesRoutes = require("./api/routes/exercises");
+
+const workoutRoutes = require("./api/routes/workout");
 
 mongoose
   .connect(mongoURI)
@@ -13,12 +13,15 @@ mongoose
   .catch((err) => console.log("MongoDB Connection Error", err));
 
 app.use(morgan("dev"));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
   if (req.method === "OPTIONS") {
     res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
     return res.status(200).json({});
@@ -26,7 +29,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/exercises", exercisesRoutes);
+// Use '/workouts' to match RESTful conventions
+app.use("/workouts", workoutRoutes);
 
 app.use((req, res, next) => {
   const error = new Error("Not found");
